@@ -2,11 +2,11 @@
 
 This is a package to perform deep learning.
 
-### Installation:
+## Installation:
 
     pip install deepneuron
 
-### Implementation:
+## Implementation:
 
     from deepneuron import NeuralNetwork
 
@@ -41,7 +41,15 @@ This is a package to perform deep learning.
                     Y=None, 
                     batch_size=None)
 
-### Parameters:
+        def get_outputs(self)
+
+        def get_parameters(self)
+
+        def set_parameters(self, parameters)
+
+## Parameters:
+
+### Class initialization parameters:
 
 layer_dims: List of dimensions of all layers including the input 
 dimensions. eg: [(28, 28, 1), ((3,3), (2,2), 2, 5), ((2,2), 2), 5, 10]. 
@@ -92,3 +100,36 @@ bn_momentum: The momentum of the batch mean and variance when performing batch n
 
 grad_check: Boolean value to indicate whether model should perform gradient checking. 
 Used for testing.
+
+### Model.fit inputs:
+
+X: Numpy array of input training data. The first dimension should be the no. of examples.
+
+Y: Numpy array of target data. The first dimension should be the no. of examples. 
+It should be one hot encoded. If there are just 2 classes, it can be encoded in a single column. 
+
+num_epochs: The number of epochs to run.
+
+init_params: Boolean value. True to reinitialize parameters and run model again. 
+False to continue training same model.
+
+### Model.predict inputs:
+
+X: Numpy array of data for which you want predictions. The first dimension should be the no. of examples.
+
+Y: Numpy array of target data. The first dimension should be the no. of examples. 
+It should be one hot encoded. If there are just 2 classes, it can be encoded in a single column. 
+
+batch_size: The size of each batch.
+
+### Model.get_outputs:
+
+Get the dimensions of outputs of each layer, including the input.
+
+### Model.get_parameters:
+
+Returns a dictionary with the parameters of the model.
+
+### Model.set_parameters:
+
+Takes as input a dictionary of the parameters to be used by the model.
