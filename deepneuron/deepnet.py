@@ -216,6 +216,8 @@ class NeuralNetwork:
             self.__cost_function = self.__compute_binary_cost
         elif cost_function == "categorical_cross_entropy":
             self.__cost_function = self.__compute_categorical_cost
+        elif cost_function == "squared_error":
+            self.__cost_function = self.__compute_squared_error_cost
 
     @staticmethod
     def __linear_forward(Z):
@@ -312,9 +314,10 @@ class NeuralNetwork:
         return np.linalg.norm(dtheta_approx - dtheta) / (np.linalg.norm(dtheta_approx) + np.linalg.norm(dtheta))
 
     def __compute_binary_cost(self):
-        cost = np.mean(-self.__Y_minibatch * np.log(np.maximum(self.__layer_activations[f"A{self.__L}"], 1e-16)) \
-                       - (1 - self.__Y_minibatch) * np.log(
-            np.maximum(1 - self.__layer_activations[f"A{self.__L}"], 1e-16)))
+        cost = np.sum(-self.__Y_minibatch * np.log(np.maximum(self.__layer_activations[f"A{self.__L}"], 1e-16)) \
+                      - (1 - self.__Y_minibatch) * np.log(
+            np.maximum(1 - self.__layer_activations[f"A{self.__L}"], 1e-16))) \
+               / self.__curr_batch_size
         reg_cost = 0
         for l in range(1, self.__L + 1):
             if self.__layers[l - 1] == "maxpool" or self.__layers[l - 1] == "avgpool":
@@ -326,6 +329,18 @@ class NeuralNetwork:
     def __compute_categorical_cost(self):
         cost = np.sum(-self.__Y_minibatch * np.log(np.maximum(self.__layer_activations[f"A{self.__L}"], 1e-16))) \
                / self.__curr_batch_size
+        reg_cost = 0
+        for l in range(1, self.__L + 1):
+            if self.__layers[l - 1] == "maxpool" or self.__layers[l - 1] == "avgpool":
+                continue
+            reg_cost += np.sum(self.__parameters[f"W{l}"] ** 2)
+        cost += self.__lambd * reg_cost / (2 * self.__curr_batch_size)
+        return cost
+
+    def __compute_squared_error_cost(self):
+        cost = np.sum((self.__Y_minibatch - self.__layer_activations[f"A{self.__L}"]) ** 2) / (
+                    2 * self.__curr_batch_size)
+
         reg_cost = 0
         for l in range(1, self.__L + 1):
             if self.__layers[l - 1] == "maxpool" or self.__layers[l - 1] == "avgpool":
@@ -535,6 +550,9 @@ class NeuralNetwork:
                 dZ = dA * self.__backward_activations[l - 1](self.__layer_activations[f"A{l}"]) \
                      * self.__layer_dropouts[f"D{l}"] / self.__keep_prob[l - 1]
 
+            if l == self.__L and self.__activations[self.__L - 1] == "relu":
+                dZ = dZ * self.__backward_activations[l - 1](self.__layer_activations[f"A{l}"])
+
             if self.__layers[l - 1] == "conv":
                 if self.__layers[l] == "dense":
                     dZ = np.reshape(dZ, ((dZ.shape[0],) + self.__outputs[l]))
@@ -705,4 +723,3 @@ class NeuralNetwork:
                     self.__backward_prop()
                     print(f"Output of gradient check: {self.__gradient_check(self.__cost_function)}")
         self.__iteration = self.__num_epochs
-

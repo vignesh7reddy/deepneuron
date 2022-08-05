@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 DESCRIPTION = 'Create neural networks'
 LONG_DESCRIPTION = 'A package that allows you to easily create and run neural networks.'
 
